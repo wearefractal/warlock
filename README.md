@@ -26,7 +26,7 @@ var Warlock = require('warlock');
 var server = http.createServer().listen(8080);
 var lock = Warlock.createServer({server:server});
 
-lock.add {planet:{name:"Mars"}}
+lock.add({planet:{name:"Mars"}});
 ```
 
 ### Client

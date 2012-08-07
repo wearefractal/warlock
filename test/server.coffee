@@ -61,6 +61,30 @@ describe 'Warlock', ->
 
       trans.run()
 
+    it 'should incr', (done) ->
+      serv = getServer()
+      test = hello: 1
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @incr 'hello'
+        done()
+
+      trans.run()
+
+    it 'should decr', (done) ->
+      serv = getServer()
+      test = hello: 1
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @decr 'hello'
+        done()
+
+      trans.run()
+
     it 'should complete with no ops', (done) ->
       serv = getServer()
       serv.add {}
@@ -85,6 +109,32 @@ describe 'Warlock', ->
         serv.root.hello.should.equal 'mars'
         serv.root.newProp.should.equal true
         should.not.exist serv.root.test
+        done()
+
+    it 'should complete with incr', (done) ->
+      serv = getServer()
+      test = hello: 1
+      serv.add test
+      client = getClient serv
+      trans = client.atomic ->
+        @incr 'hello'
+        @done()
+
+      trans.run ->
+        serv.root.hello.should.equal 2
+        done()
+
+    it 'should complete with decr', (done) ->
+      serv = getServer()
+      test = hello: 1
+      serv.add test
+      client = getClient serv
+      trans = client.atomic ->
+        @decr 'hello'
+        @done()
+
+      trans.run ->
+        serv.root.hello.should.equal 0
         done()
 
     it 'should retry if called', (done) ->
@@ -129,4 +179,46 @@ describe 'Warlock', ->
 
       trans.run ->
         serv.root.hello.should.equal 'marsi'
+        done()
+
+    it 'should restart if called', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+
+      trans = client.atomic ->
+        if @get('hello') is 'world'
+          serv.root.hello = 'venus'
+          @restart()
+        else if @get('hello') is 'venus'
+          @set 'hello', 'mars'
+          @done()
+
+      trans.run ->
+        serv.root.hello.should.equal 'mars'
+        done()
+
+    it 'should abort if called', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic -> @abort()
+      trans.run (err) ->
+        should.exist err
+        done()
+
+    it 'should abort with message if called', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic -> @abort 'something broke'
+      trans.run (err) ->
+        should.exist err
+        (err.message.indexOf('something broke') > -1).should.be.true
         done()

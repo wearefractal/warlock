@@ -28,10 +28,10 @@ class Transaction
           ctx.set k, undefined
           return ctx
         incr: (k, v=1) =>
-          ctx.set k, k+v
+          ctx.set k, root[k]+v
           return ctx
         decr: (k, v=1) =>
-          ctx.set k, k-v
+          ctx.set k, root[k]-v
           return ctx
 
         retry: =>

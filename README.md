@@ -17,6 +17,8 @@
 </tr>
 </table>
 
+Warlock is inspired by AtomizeJS but focuses more on common use cases and less on computer science accuracy.
+
 ## Example
 
 ### Server

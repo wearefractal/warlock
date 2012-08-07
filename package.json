@@ -1,0 +1,33 @@
+{
+   "name":"warlock",
+   "description":"DSTM/Atomic transactions via WebSockets",
+   "version":"0.0.1",
+   "homepage":"http://github.com/wearefractal/warlock",
+   "repository":"git://github.com/wearefractal/warlock.git",
+   "author":"Fractal <contact@wearefractal.com> (http://wearefractal.com/)",
+   "main":"./index.js",
+
+   "dependencies":{
+      "coffee-script":"*",
+      "protosock":"*",
+      "deep-equal":"*"
+   },
+   "devDependencies":{
+      "mocha":"*",
+      "should":"*",
+      "connect":"*",
+      "uglify-js":"*"
+   },
+   "scripts":{
+      "test":"mocha --compilers coffee:coffee-script --ignore-leaks --reporter spec"
+   },
+   "engines":{
+      "node":">= 0.4.0"
+   },
+   "licenses":[
+      {
+         "type":"MIT",
+         "url":"http://github.com/wearefractal/warlock/raw/master/LICENSE"
+      }
+   ]
+}

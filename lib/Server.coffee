@@ -6,15 +6,18 @@ module.exports = (opt) ->
       namespace: 'Warlock'
       resource: 'default'
 
-    start: -> @root = {}
+    start: -> 
+      @root = {}
 
     inbound: (socket, msg, done) ->
+      #console.log 'in', msg
       try
         done JSON.parse msg
       catch err
         @error socket, err
 
     outbound: (socket, msg, done) ->
+      #console.log 'out', msg
       try
         done JSON.stringify msg
       catch err
@@ -32,42 +35,42 @@ module.exports = (opt) ->
             return done false unless typeof k is 'string'
             # action.value can be any value (set) or undefined (delete)
             # action.current can be any value (replace) or undefined (create)
-        when 'sync', 'retry'
-          return done false unless typeof msg.id is 'string'
         else
           return done false
       return done true
 
+    connect: (socket) ->
+      socket.write
+        type: 'sync'
+        value: @root
+
     close: (socket, reason) -> @emit 'close', reason
     message: (socket, msg) ->
-      if msg.type is 'transaction'
-        for k, action of msg.log
-          if equal action.current, @root[k]
-            @root[k] = action.value
-            continue
-          else
-            socket.write
-              type: 'retry'
-              id: msg.id
-            return
-        @emit 'transaction', msg
+      return unless msg.type is 'transaction'
+      valid = true
+      for k, action of msg.log
+        valid = equal action.current, @root[k]
+        continue if valid
+        break
+
+      if valid
+        @root[k] = action.value for k, action of msg.log
+        for id, client of @server.clients
+          # TODO: sync only changed keys
+          client.write
+            type: 'sync'
+            value: @root
+
         socket.write
           type: 'complete'
           id: msg.id
-        return
-      else if msg.type is 'sync'
+      else
         socket.write
           type: 'sync'
-          id: msg.id
           value: @root
-        return
-      else if msg.type is 'retry'
-        @once 'transaction', =>
-          socket.write
-            type: 'retry'
-            id: msg.id
-          return
-        return
+        socket.write
+          type: 'failed'
+          id: msg.id
           
 
     add: (obj) ->

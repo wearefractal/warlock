@@ -147,7 +147,6 @@ describe 'Warlock', ->
         trans = client.atomic ->
           @set 'hello', 'venus'
           @done()
-
         trans.run()
 
       trans = client.atomic ->
@@ -185,14 +184,15 @@ describe 'Warlock', ->
       serv = getServer()
       test = hello: 'world'
       serv.add test
+      last = 0
 
       client = getClient serv
 
       trans = client.atomic ->
-        if @get('hello') is 'world'
-          serv.root.hello = 'venus'
+        if last is 0
+          last = 1
           @restart()
-        else if @get('hello') is 'venus'
+        else
           @set 'hello', 'mars'
           @done()
 
@@ -222,3 +222,24 @@ describe 'Warlock', ->
         should.exist err
         (err.message.indexOf('something broke') > -1).should.be.true
         done()
+
+    it 'should subscribe to all changes', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+
+      test = ->
+        client.subscribe (root) ->
+          should.exist root
+          should.exist root.hello
+          root.hello.should.equal 'mars'
+          done()
+
+        trans = client.atomic ->
+          @set 'hello', 'mars'
+          @done()
+        trans.run()
+
+      setTimeout test, 1000

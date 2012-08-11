@@ -2641,6 +2641,10 @@ function ws () {
         namespace: 'Warlock',
         resource: 'default'
       },
+      start: function() {
+        this.root = {};
+        return this.hasSynced = false;
+      },
       inbound: function(socket, msg, done) {
         try {
           return done(JSON.parse(msg));
@@ -2664,15 +2668,12 @@ function ws () {
         }
         switch (msg.type) {
           case 'sync':
-            if (typeof msg.id !== 'string') {
-              return done(false);
-            }
             if (typeof msg.value !== 'object') {
               return done(false);
             }
             break;
-          case 'retry':
           case 'complete':
+          case 'failed':
             if (typeof msg.id !== 'string') {
               return done(false);
             }
@@ -2686,16 +2687,26 @@ function ws () {
         return this.emit('close', reason);
       },
       message: function(socket, msg) {
+        var k, v, _ref;
         if (msg.type === 'sync') {
-          return socket.emit("sync." + msg.id, msg.value);
-        } else if (msg.type === 'retry') {
-          return socket.emit("retry." + msg.id);
+          _ref = msg.value;
+          for (k in _ref) {
+            v = _ref[k];
+            this.root[k] = v;
+          }
+          this.hasSynced = true;
+          return this.emit("sync", msg.value);
         } else if (msg.type === 'complete') {
-          return socket.emit("complete." + msg.id);
+          return this.emit("complete." + msg.id);
+        } else if (msg.type === 'failed') {
+          return this.emit("failed." + msg.id);
         }
       },
       atomic: function(fn) {
-        return new Transaction(fn, this.ssocket);
+        return new Transaction(fn, this);
+      },
+      subscribe: function(fn) {
+        return this.on('sync', fn);
       }
     };
     for (k in opt) {

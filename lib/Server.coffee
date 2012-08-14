@@ -37,29 +37,26 @@ module.exports = (opt) ->
           return done false
       return done true
 
-    connect: (socket) ->
-      socket.write
-        type: 'sync'
-        value: @root
+    connect: (socket) -> @sync socket
 
     close: (socket, reason) -> @emit 'close', reason
+    sync: (socket) ->
+      if socket
+        socket.write
+          type: 'sync'
+          value: @root
+      else
+        @sync socket for id, socket of @server.clients
+
     message: (socket, msg) ->
-      return unless msg.type is 'transaction'
       merged = merge msg.log, @root
       if merged
-        for id, client of @server.clients
-          # TODO: sync only changed keys
-          client.write
-            type: 'sync'
-            value: @root
-
+        @sync()
         socket.write
           type: 'complete'
           id: msg.id
       else
-        socket.write
-          type: 'sync'
-          value: @root
+        @sync socket
         socket.write
           type: 'failed'
           id: msg.id

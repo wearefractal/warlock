@@ -2847,21 +2847,21 @@ function ws () {
       },
       message: function(socket, msg) {
         var k, v, _ref;
-        if (msg.type === 'sync') {
-          _ref = msg.value;
-          for (k in _ref) {
-            v = _ref[k];
-            this.root[k] = v;
-          }
-          if (!this.hasSynced) {
-            this.hasSynced = true;
-            this.emit("ready");
-          }
-          return this.emit("sync", msg.value);
-        } else if (msg.type === 'complete') {
-          return this.emit("complete." + msg.id);
-        } else if (msg.type === 'failed') {
-          return this.emit("failed." + msg.id);
+        switch (msg.type) {
+          case 'sync':
+            _ref = msg.value;
+            for (k in _ref) {
+              v = _ref[k];
+              this.root[k] = v;
+            }
+            if (!this.hasSynced) {
+              this.hasSynced = true;
+              this.emit("ready");
+            }
+            return this.emit("sync", msg.value);
+          case 'complete':
+          case 'failed':
+            return this.emit("" + msg.type + "." + msg.id);
         }
       },
       atomic: function(fn) {

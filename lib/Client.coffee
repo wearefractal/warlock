@@ -40,16 +40,16 @@ client = (opt) ->
 
     close: (socket, reason) -> @emit 'close', reason
     message: (socket, msg) ->
-      if msg.type is 'sync'
-        @root[k] = v for k,v of msg.value
-        unless @hasSynced
-          @hasSynced = true
-          @emit "ready"
-        @emit "sync", msg.value
-      else if msg.type is 'complete'
-        @emit "complete.#{msg.id}"
-      else if msg.type is 'failed'
-        @emit "failed.#{msg.id}"
+      switch msg.type
+        when 'sync'
+          @root[k] = v for k,v of msg.value
+          unless @hasSynced
+            @hasSynced = true
+            @emit "ready"
+          @emit "sync", msg.value
+
+        when 'complete', 'failed'
+          @emit "#{msg.type}.#{msg.id}"
 
     atomic: (fn) -> new Transaction fn, @
     ready: (fn) -> if @hasSynced then fn() else @once 'ready', fn

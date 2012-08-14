@@ -75,9 +75,11 @@ describe 'Warlock', ->
       client = getClient serv
       trans = client.atomic ->
         @incr 'hello'
-        done()
+        @done()
 
-      trans.run()
+      trans.run ->
+        serv.root.hello.should.equal 2
+        done()
 
     it 'should decr', (done) ->
       serv = getServer()
@@ -87,9 +89,39 @@ describe 'Warlock', ->
       client = getClient serv
       trans = client.atomic ->
         @decr 'hello'
+        @done()
+
+      trans.run ->
+        serv.root.hello.should.equal 0
         done()
 
-      trans.run()
+    it 'should push', (done) ->
+      serv = getServer()
+      test = hello: [1]
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @push 'hello', 2
+        @done()
+
+      trans.run ->
+        serv.root.hello.should.eql [1,2]
+        done()
+
+    it 'should unshift', (done) ->
+      serv = getServer()
+      test = hello: [1]
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @unshift 'hello', 2
+        @done()
+
+      trans.run ->
+        serv.root.hello.should.eql [2,1]
+        done()
 
     it 'should complete with no ops', (done) ->
       serv = getServer()

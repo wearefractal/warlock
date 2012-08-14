@@ -4,6 +4,17 @@ getId = =>
   rand = -> (((1 + Math.random()) * 0x10000000) | 0).toString 16
   return rand()+rand()+rand()
 
+cloneObj = (o) ->
+  if typeof o is 'object'
+    if o.length?
+      return (i for i in o)
+    else
+      nu = {}
+      nu[k]=v for own k,v of o
+      return nu
+  else
+    return o
+
 class Transaction
   constructor: (@fn, @parent) ->
     @log = {}
@@ -18,11 +29,11 @@ class Transaction
 
 
   doTrans: (cb) =>
-    @root[k] = v for k,v of @parent.root
+    @root = cloneObj @parent.root
     ctx =
-      get: (k) => @root[k]
+      get: (k) => cloneObj @root[k]
       set: (k, v) =>
-        @log[k] ?= current: @root[k]
+        @log[k] ?= current: ctx.get k
         @log[k].value = v
         @root[k] = v
         return ctx
@@ -31,9 +42,16 @@ class Transaction
       delete: (k) => ctx.set k, undefined
       incr: (k, v=1) => ctx.set k, ctx.get(k)+v
       decr: (k, v=1) => ctx.set k, ctx.get(k)-v
+      push: (k, v) => 
+        temp = ctx.get k
+        temp.push v
+        ctx.set k, temp
+      unshift: (k, v) => 
+        temp = ctx.get k
+        temp.unshift v
+        ctx.set k, temp
 
       retry: => @parent.once 'sync', ctx.restart
-
       restart: =>
         @parent.removeAllListeners "failed.#{@id}"
         @parent.removeAllListeners "complete.#{@id}"

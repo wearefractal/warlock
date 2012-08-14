@@ -42,7 +42,9 @@ client = (opt) ->
     message: (socket, msg) ->
       if msg.type is 'sync'
         @root[k] = v for k,v of msg.value
-        @hasSynced = true
+        unless @hasSynced
+          @hasSynced = true
+          @emit "ready"
         @emit "sync", msg.value
       else if msg.type is 'complete'
         @emit "complete.#{msg.id}"
@@ -50,6 +52,7 @@ client = (opt) ->
         @emit "failed.#{msg.id}"
 
     atomic: (fn) -> new Transaction fn, @
+    ready: (fn) -> if @hasSynced then fn() else @once 'ready', fn
     subscribe: (fn) -> @on 'sync', fn
 
   out.options[k]=v for k,v of opt

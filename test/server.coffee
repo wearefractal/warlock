@@ -31,6 +31,12 @@ describe 'Warlock', ->
       done()
 
   describe 'transactions', ->
+    it 'should sync on connect', (done) ->
+      serv = getServer()
+
+      client = getClient serv
+      client.ready done
+
     it 'should get', (done) ->
       serv = getServer()
       test = hello: 'world'

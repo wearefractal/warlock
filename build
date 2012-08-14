@@ -1,10 +1,11 @@
 # compile
 rm -rf dist
 mkdir dist
-coffee -o dist -c lib/Client.coffee
+coffee -o dist -c lib/Transaction.coffee lib/Client.coffee
 
 # build
 cat node_modules/protosock/protosock.js > warlock.js
+cat dist/Transaction.js >> warlock.js
 cat dist/Client.js >> warlock.js
 
 # minify

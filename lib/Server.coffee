@@ -1,4 +1,4 @@
-equal = require 'deep-equal'
+merge = require './merge'
 
 module.exports = (opt) ->
   out =
@@ -10,14 +10,12 @@ module.exports = (opt) ->
       @root = {}
 
     inbound: (socket, msg, done) ->
-      #console.log 'in', msg
       try
         done JSON.parse msg
       catch err
         @error socket, err
 
     outbound: (socket, msg, done) ->
-      #console.log 'out', msg
       try
         done JSON.stringify msg
       catch err
@@ -47,14 +45,8 @@ module.exports = (opt) ->
     close: (socket, reason) -> @emit 'close', reason
     message: (socket, msg) ->
       return unless msg.type is 'transaction'
-      valid = true
-      for k, action of msg.log
-        valid = equal action.current, @root[k]
-        continue if valid
-        break
-
-      if valid
-        @root[k] = action.value for k, action of msg.log
+      merged = merge msg.log, @root
+      if merged
         for id, client of @server.clients
           # TODO: sync only changed keys
           client.write

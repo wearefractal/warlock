@@ -67,6 +67,50 @@ describe 'Warlock', ->
 
       trans.run()
 
+    it 'should run middleware on set', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @set 'hello', 'mars'
+        @done()
+
+      serv.use 'hello', (socket, trans, next) ->
+        should.exist socket
+        should.exist trans
+        should.exist trans.key
+        should.exist trans.current
+        should.exist trans.value
+        should.exist next
+        trans.key.should.equal 'hello'
+        trans.current.should.equal 'world'
+        trans.value.should.equal 'mars'
+        done()
+
+
+      trans.run()
+
+    it 'should run mutating middleware on set', (done) ->
+      serv = getServer()
+      test = hello: 'world'
+      serv.add test
+
+      client = getClient serv
+      trans = client.atomic ->
+        @set 'hello', 'mars'
+        @done()
+
+      serv.use 'hello', (socket, trans, next) ->
+        trans.value = 'venus'
+        next()
+
+      trans.run ->
+        should.exist serv.root.hello
+        serv.root.hello.should.equal 'venus'
+        done()
+
     it 'should incr', (done) ->
       serv = getServer()
       test = hello: 1

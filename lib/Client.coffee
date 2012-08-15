@@ -14,18 +14,6 @@ client = (opt) ->
       @root = {}
       @hasSynced = false
 
-    inbound: (socket, msg, done) ->
-      try
-        done JSON.parse msg
-      catch err
-        @error socket, err
-
-    outbound: (socket, msg, done) ->
-      try
-        done JSON.stringify msg
-      catch err
-        @error socket,  err
-
     validate: (socket, msg, done) ->
       return done false unless typeof msg is 'object'
       return done false unless typeof msg.type is 'string'

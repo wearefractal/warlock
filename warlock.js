@@ -2804,20 +2804,6 @@ function ws () {
         this.root = {};
         return this.hasSynced = false;
       },
-      inbound: function(socket, msg, done) {
-        try {
-          return done(JSON.parse(msg));
-        } catch (err) {
-          return this.error(socket, err);
-        }
-      },
-      outbound: function(socket, msg, done) {
-        try {
-          return done(JSON.stringify(msg));
-        } catch (err) {
-          return this.error(socket, err);
-        }
-      },
       validate: function(socket, msg, done) {
         if (typeof msg !== 'object') {
           return done(false);

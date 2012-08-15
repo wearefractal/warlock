@@ -1,4 +1,5 @@
 merge = require './merge'
+async = require 'async'
 
 module.exports = (opt) ->
   out =
@@ -8,18 +9,7 @@ module.exports = (opt) ->
 
     start: -> 
       @root = {}
-
-    inbound: (socket, msg, done) ->
-      try
-        done JSON.parse msg
-      catch err
-        @error socket, err
-
-    outbound: (socket, msg, done) ->
-      try
-        done JSON.stringify msg
-      catch err
-        @error socket,  err
+      @stack = {}
 
     validate: (socket, msg, done) ->
       return done false unless typeof msg is 'object'
@@ -38,7 +28,6 @@ module.exports = (opt) ->
       return done true
 
     connect: (socket) -> @sync socket
-
     close: (socket, reason) -> @emit 'close', reason
     sync: (socket) ->
       if socket
@@ -49,18 +38,36 @@ module.exports = (opt) ->
         @sync socket for id, socket of @server.clients
 
     message: (socket, msg) ->
-      merged = merge msg.log, @root
-      if merged
-        @sync()
-        socket.write
-          type: 'complete'
-          id: msg.id
-      else
-        @sync socket
-        socket.write
-          type: 'failed'
-          id: msg.id
-          
+      @runStacks socket, msg.log, =>
+        merged = merge msg.log, @root
+        if merged
+          @sync()
+          socket.write
+            type: 'complete'
+            id: msg.id
+        else
+          @sync socket
+          socket.write
+            type: 'failed'
+            id: msg.id
+    
+    use: (k, fn) -> (@stack[k]?=[]).push fn
+
+    runStacks: (socket, log, cb) ->
+      run = (k, done) =>
+        return done() unless @stack[k]? and @stack[k].length isnt 0
+        runrl = (middle, done) =>
+          trans =
+            key: k
+            current: log[k].current
+            value: log[k].value
+          middle socket, trans, =>
+            log[k].value = trans.value
+            done()
+
+        async.forEachSeries @stack[k], runrl, done
+      async.forEachSeries Object.keys(log), run, cb
+      return
 
     add: (obj) ->
       addObject = (ns, nobj) =>

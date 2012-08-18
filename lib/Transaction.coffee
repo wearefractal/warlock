@@ -1,11 +1,11 @@
-isBrowser = typeof window isnt 'undefined'
+isBrowser = typeof window isnt "undefined"
 
 getId = =>
   rand = -> (((1 + Math.random()) * 0x10000000) | 0).toString 16
   return rand()+rand()+rand()
 
 cloneObj = (o) ->
-  if typeof o is 'object'
+  if typeof o is "object"
     if o.length?
       return (i for i in o)
     else
@@ -22,10 +22,7 @@ class Transaction
     @id = getId()
 
   run: (cb) =>
-    if @parent.hasSynced
-      @doTrans cb
-    else
-      @parent.once 'sync', => @doTrans cb
+    @parent.ready => @doTrans cb
 
 
   doTrans: (cb) =>
@@ -51,7 +48,7 @@ class Transaction
         temp.unshift v
         ctx.set k, temp
 
-      retry: => @parent.once 'sync', ctx.restart
+      retry: => @parent.once "sync", ctx.restart
       restart: =>
         @parent.removeAllListeners "failed.#{@id}"
         @parent.removeAllListeners "complete.#{@id}"
@@ -68,7 +65,7 @@ class Transaction
         @parent.once "complete.#{@id}", cb if cb?
         @parent.once "failed.#{@id}", ctx.restart
         @parent.ssocket.write
-          type: 'transaction'
+          type: "transaction"
           id: @id
           log: @log
 

@@ -9,7 +9,7 @@
 
    "dependencies":{
       "coffee-script":"*",
-      "protosock":"*",
+      "protosock":"0.0.3",
       "deep-equal":"*",
       "async":"*"
    },

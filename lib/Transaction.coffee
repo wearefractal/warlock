@@ -24,7 +24,6 @@ class Transaction
   run: (cb) =>
     @parent.ready => @doTrans cb
 
-
   doTrans: (cb) =>
     @root = cloneObj @parent.root
     ctx =

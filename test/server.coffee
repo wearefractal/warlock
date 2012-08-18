@@ -1,6 +1,6 @@
-http = require "http"
 should = require "should"
 Warlock = require "../"
+http = require "http"
 {join} = require "path"
 
 randomPort = -> Math.floor(Math.random() * 1000) + 8000
@@ -316,15 +316,14 @@ describe "Warlock", ->
       client = getClient serv
       client2 = getClient serv
 
-      client.ready ->
-        client2.ready ->
-          client.subscribe ->
-            client.root.should.eql client2.root
-            done()
-          trans = client2.atomic ->
-            @set "hello", "mars"
-            @done()
-          trans.run()
+      client.subscribe ->
+        client.root.hello.should.equal "mars"
+        done()
+
+      trans = client2.atomic ->
+        @set "hello", "mars"
+        @done()
+      trans.run()
 
     it "should subscribe to all changes", (done) ->
       serv = getServer()

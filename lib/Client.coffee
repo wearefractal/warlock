@@ -12,11 +12,10 @@ client = (opt) ->
 
     start: ->
       @root = {}
-      @hasSynced = false
+      @synced = false
       return
 
     validate: (socket, msg, done) ->
-      console.log "CLIENT", msg
       return done false unless typeof msg is "object"
       return done false unless typeof msg.type is "string"
       switch msg.type
@@ -28,15 +27,14 @@ client = (opt) ->
           return done false
       return done true
 
-    close: (socket, reason) -> @emit "close", reason
     message: (socket, msg) ->
       switch msg.type
         when "sync"
           @root[k] = v for k,v of msg.value
-          if @hasSynced
+          if @synced
             @emit "sync", msg.value
           else
-            @hasSynced = true
+            @synced = true
             @emit "ready"
         when "complete", "failed"
           @emit "#{msg.type}.#{msg.id}"
@@ -44,7 +42,7 @@ client = (opt) ->
 
     atomic: (fn) -> new Transaction fn, @
     ready: (fn) -> 
-      if @hasSynced
+      if @synced
         fn() 
       else 
         @once "ready", fn
@@ -57,5 +55,6 @@ client = (opt) ->
 
 if isBrowser
   window.Warlock = createClient: (opt={}) -> ProtoSock.createClient client opt
+  define(->Warlock) if typeof define is 'function'
 else
   module.exports = client

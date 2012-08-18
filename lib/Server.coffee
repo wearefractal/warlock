@@ -12,7 +12,6 @@ module.exports = (opt) ->
       @stack = {}
 
     validate: (socket, msg, done) ->
-      console.log "SERVER", msg
       return done false unless typeof msg is "object"
       return done false unless typeof msg.type is "string"
       switch msg.type
@@ -31,7 +30,6 @@ module.exports = (opt) ->
       return done true
 
     connect: (socket) -> @sync socket
-    close: (socket, reason) -> @emit "close", reason
     sync: (socket) ->
       if socket
         socket.write

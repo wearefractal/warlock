@@ -1,4 +1,4 @@
-equal = require 'deep-equal'
+equal = require "deep-equal"
 
 module.exports = (log, root) ->
   valid = true

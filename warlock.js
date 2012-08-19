@@ -2730,7 +2730,7 @@ Transport.prototype.onClose = function () {
           return ctx;
         },
         "delete": function(k) {
-          return ctx.set(k, void 0);
+          return ctx.set(k);
         },
         incr: function(k, v) {
           if (v == null) {

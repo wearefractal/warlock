@@ -35,10 +35,10 @@ class Transaction
         return ctx
 
       # sugar
-      delete: (k) => ctx.set k, undefined
+      delete: (k) => ctx.set k
       incr: (k, v=1) => ctx.set k, ctx.get(k)+v
       decr: (k, v=1) => ctx.set k, ctx.get(k)-v
-      push: (k, v) => 
+      push: (k, v) =>
         temp = ctx.get k
         temp.push v
         ctx.set k, temp

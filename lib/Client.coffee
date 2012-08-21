@@ -60,6 +60,6 @@ client = (opt) ->
 
 if isBrowser
   window.Warlock = createClient: (opt={}) -> ProtoSock.createClient client opt
-  define(->Warlock) if typeof define is 'function'
+  #define(->Warlock) if typeof define is 'function'
 else
   module.exports = client

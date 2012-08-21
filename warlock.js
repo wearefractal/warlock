@@ -2914,11 +2914,6 @@ Transport.prototype.onClose = function () {
         return ProtoSock.createClient(client(opt));
       }
     };
-    if (typeof define === 'function') {
-      define(function() {
-        return Warlock;
-      });
-    }
   } else {
     module.exports = client;
   }

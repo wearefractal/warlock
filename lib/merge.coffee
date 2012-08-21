@@ -1,14 +1,23 @@
 equal = require "deep-equal"
+async = require "async"
 
-module.exports = (log, root) ->
-  valid = true
-  for k, action of log
+module.exports = (log, root, cb) ->
+  diff = {}
+  check = (k, done) ->
+    action = log[k]
     valid = equal action.current, root[k]
-    continue if valid
-    break
+    return done() if valid
+    done
+      actual: root[k]
+      current: action.current
+      value: action.value
 
-  if valid
-    root[k] = action.value for k, action of log
-    return true
-  else
-    return false
+  performMerge = (k, done) ->
+    action = log[k]
+    diff[k] = root[k] = action.value
+    done()
+
+  async.forEach Object.keys(log), check, (conflict) ->
+    return cb conflict if conflict?
+    async.forEach Object.keys(log), performMerge, ->
+      cb conflict, diff

@@ -13,6 +13,8 @@ client = (opt) ->
     start: ->
       @root = {}
       @synced = false
+      @subscribers = {}
+      @on "sync", @runSubscribers
       return
 
     validate: (socket, msg, done) ->
@@ -46,9 +48,12 @@ client = (opt) ->
         fn() 
       else 
         @once "ready", fn
+
+    subscribe: (kp, fn) -> (@subscribers[kp]?=[]).push fn
+    runSubscribers: (diff) ->
+      for kp, nu of diff when @subscribers[kp]?
+        listener kp, nu for listener in @subscribers[kp]
       return
-    subscribe: (fn) -> 
-      @on "sync", fn
 
   out.options[k]=v for k,v of opt
   return out

@@ -17,39 +17,37 @@
 </tr>
 </table>
 
-Warlock is inspired by AtomizeJS but focuses more on common use cases and less on computer science accuracy.
-
 ## Example
 
 ### Server
 
 ```javascript
-var Warlock = require('warlock');
-var server = http.createServer().listen(8080);
-var lock = Warlock.createServer({server:server});
+Warlock = require "warlock"
+server = http.createServer().listen 8080
+lock = Warlock.createServer server: server
 
-lock.add({planet:{name:"Mars"}});
+lock.add
+  planet:
+    name: "Mars"
 ```
 
 ### Client
 
 ```javascript
-var lock = Warlock.createClient();
+lock = Warlock.createClient()
 
-var addMarsSize = lock.atomic(function(){
-  var planetName = this.get('planet.name');
-  if(planetName === 'Mars'){
-    this.set('planet.equator.size', 3396);
-    this.done();
-  } else {
-    //Wait until another transaction happens then try again
-    this.retry();
-  }
-});
+addMarsSize = lock.atomic ->
+  planetName = @get "planet.name"
+  if planetName is "Mars"
+    @set "planet.equator.size", 3396
+    @done()
+  else
+    #Wait until another transaction happens then try again
+    @retry()
 
-addMarsSize.run(function(err){
-  //err will exist if the transaction failed more times than the policy allows
-});
+addMarsSize.run (err) ->
+
+  # err will exist if the transaction was aborted
 ```
 
 ## Server Usage
@@ -62,8 +60,8 @@ resource - change to allow multiple servers on one port (default: "default")
 ```
 
 ```javascript
-var Warlock = require('warlock');
-var lock = Warlock.createServer({options});
+Warlock = require 'warlock'
+lock = Warlock.createServer {options}
 ```
 
 ## Client Usage
@@ -79,7 +77,7 @@ resource - change to allow multiple servers on one port (default: "default")
 ```
 
 ```javascript
-var lock = Warlock.createClient({options});
+lock = Warlock.createClient {options}
 ```
 
 ## LICENSE

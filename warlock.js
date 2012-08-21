@@ -2822,6 +2822,8 @@ Transport.prototype.onClose = function () {
       start: function() {
         this.root = {};
         this.synced = false;
+        this.subscribers = {};
+        this.on("sync", this.runSubscribers);
       },
       validate: function(socket, msg, done) {
         if (typeof msg !== "object") {
@@ -2873,13 +2875,27 @@ Transport.prototype.onClose = function () {
       },
       ready: function(fn) {
         if (this.synced) {
-          fn();
+          return fn();
         } else {
-          this.once("ready", fn);
+          return this.once("ready", fn);
         }
       },
-      subscribe: function(fn) {
-        return this.on("sync", fn);
+      subscribe: function(kp, fn) {
+        var _base, _ref;
+        return ((_ref = (_base = this.subscribers)[kp]) != null ? _ref : _base[kp] = []).push(fn);
+      },
+      runSubscribers: function(diff) {
+        var kp, listener, nu, _i, _len, _ref;
+        for (kp in diff) {
+          nu = diff[kp];
+          if (this.subscribers[kp] != null) {
+            _ref = this.subscribers[kp];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              listener = _ref[_i];
+              listener(kp, nu);
+            }
+          }
+        }
       }
     };
     for (k in opt) {

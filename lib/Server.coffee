@@ -30,33 +30,34 @@ module.exports = (opt) ->
       return done true
 
     connect: (socket) -> @sync socket
-    sync: (socket) ->
-      if socket
-        socket.write
-          type: "sync"
-          value: @root
-      else
-        syncSocket = (id, done) =>
-          socket = @server.clients[id]
-          @sync socket
+
+    sync: (socket, diff=@root) ->
+      socket.write
+        type: "sync"
+        value: diff
+
+    syncAll: (diff=@root, cb) ->
+      async.forEach Object.keys(@server.clients),
+        (id, done) =>
+          @sync @server.clients[id], diff
           done()
-        async.forEach Object.keys(@server.clients), syncSocket
+        , cb
 
     message: (socket, msg) ->
       @runStacks socket, msg.log, =>
-        merged = merge msg.log, @root
-        if merged
-          @sync()
-          socket.write
-            type: "complete"
-            id: msg.id
-          @emit "complete", msg
-        else
-          @sync socket
-          socket.write
-            type: "failed"
-            id: msg.id
-          @emit "failed", msg
+        merge msg.log, @root, (conflict, diff) =>
+          if conflict?
+            @sync socket
+            socket.write
+              type: "failed"
+              id: msg.id
+            @emit "failed", msg
+          else
+            @syncAll diff, =>
+              socket.write
+                type: "complete"
+                id: msg.id
+              @emit "complete", msg
     
     use: (k, fn) -> (@stack[k]?=[]).push fn
 

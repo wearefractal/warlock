@@ -228,8 +228,10 @@ describe "Warlock", ->
       serv.add test
 
       client = getClient serv
+      client2 = getClient serv
+
       secondary = ->
-        trans = client.atomic ->
+        trans = client2.atomic ->
           @set "hello", "venus"
           @done()
         trans.run()
@@ -316,26 +318,27 @@ describe "Warlock", ->
       client = getClient serv
       client2 = getClient serv
 
-      client.subscribe ->
-        client.root.hello.should.equal "mars"
-        done()
-
       trans = client2.atomic ->
         @set "hello", "mars"
         @done()
-      trans.run()
 
-    it "should subscribe to all changes", (done) ->
+      trans.run ->
+        client.root.hello.should.equal "mars"
+        done()
+
+    it "should subscribe to changes", (done) ->
       serv = getServer()
       test = hello: "world"
       serv.add test
 
       client = getClient serv
 
-      client.subscribe (root) ->
-        should.exist root
-        should.exist root.hello
-        root.hello.should.equal "mars"
+      client.subscribe 'hello', (kp, nu) ->
+        should.exist kp
+        should.exist nu
+        client.root.hello.should.equal "mars"
+        nu.should.equal "mars"
+        kp.should.equal "hello"
         done()
 
       trans = client.atomic ->

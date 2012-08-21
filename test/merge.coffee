@@ -12,15 +12,15 @@ describe 'merge', ->
         test:
           current: 1
           value: 3
-      merged = merge log, root
+      merge log, root, (conflict, diff) ->
 
-      should.exist merged
-      merged.should.be.true
+        should.not.exist conflict
+        should.exist diff
 
-      root.should.eql
-        test: 3
-        test2: 2
-      done()
+        root.should.eql
+          test: 3
+          test2: 2
+        done()
 
     it 'should merge pointer types', (done) ->
       root =
@@ -31,15 +31,15 @@ describe 'merge', ->
         test:
           current: [1]
           value: [1,3]
-      merged = merge log, root
+      merge log, root, (conflict, diff) ->
 
-      should.exist merged
-      merged.should.be.true
+        should.not.exist conflict
+        should.exist diff
 
-      root.should.eql
-        test: [1,3]
-        test2: 2
-      done()
+        root.should.eql
+          test: [1,3]
+          test2: 2
+        done()
 
     it 'shouldnt merge non-pointer types with conflict', (done) ->
       root =
@@ -50,15 +50,15 @@ describe 'merge', ->
         test:
           current: 2
           value: 3
-      merged = merge log, root
+      merge log, root, (conflict, diff) ->
 
-      should.exist merged
-      merged.should.be.false
+        should.exist conflict
+        should.not.exist diff
 
-      root.should.eql
-        test: 1
-        test2: 2
-      done()
+        root.should.eql
+          test: 1
+          test2: 2
+        done()
 
     it 'shouldnt merge pointer types with conflict', (done) ->
       root =
@@ -69,12 +69,12 @@ describe 'merge', ->
         test:
           current: [4]
           value: [1,3]
-      merged = merge log, root
+      merge log, root, (conflict, diff) ->
 
-      should.exist merged
-      merged.should.be.false
+        should.exist conflict
+        should.not.exist diff
 
-      root.should.eql
-        test: [1]
-        test2: 2
-      done()
+        root.should.eql
+          test: [1]
+          test2: 2
+        done()

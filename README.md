@@ -13,9 +13,11 @@
 </tr>
 <tr>
 <td>Node Version</td>
-<td>>= 0.4</td>
+<td>>= 0.6</td>
 </tr>
 </table>
+
+Warlock uses ES5 features so be sure to include es5shim on your page.
 
 ## Example
 

@@ -23,7 +23,7 @@ Warlock uses ES5 features so be sure to include es5shim on your page.
 
 ### Server
 
-```javascript
+```coffeescript
 Warlock = require "warlock"
 server = http.createServer().listen 8080
 lock = Warlock.createServer server: server
@@ -35,7 +35,7 @@ lock.add
 
 ### Client
 
-```javascript
+```coffeescript
 lock = Warlock.createClient()
 
 addMarsSize = lock.atomic ->

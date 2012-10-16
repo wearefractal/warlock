@@ -1,7 +1,7 @@
 {
    "name":"warlock",
    "description":"DSTM/Atomic transactions via WebSockets",
-   "version":"0.0.9",
+   "version":"0.0.10",
    "homepage":"http://github.com/wearefractal/warlock",
    "repository":"git://github.com/wearefractal/warlock.git",
    "author":"Fractal <contact@wearefractal.com> (http://wearefractal.com/)",
@@ -9,7 +9,7 @@
 
    "dependencies":{
       "coffee-script":"*",
-      "protosock":"*",
+      "protosock":"0.0.8",
       "deep-equal":"*",
       "async":"*"
    },

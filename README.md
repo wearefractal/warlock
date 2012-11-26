@@ -26,7 +26,7 @@ Warlock uses ES5 features so be sure to include es5shim on your page.
 ```coffeescript
 Warlock = require "warlock"
 server = http.createServer().listen 8080
-lock = Warlock.createServer server: server
+lock = Warlock.createServer server
 
 lock.add
   planet:
@@ -63,7 +63,7 @@ resource - change to allow multiple servers on one port (default: "default")
 
 ```javascript
 Warlock = require 'warlock'
-lock = Warlock.createServer {options}
+lock = Warlock.createServer httpServer, {options}
 ```
 
 ## Client Usage

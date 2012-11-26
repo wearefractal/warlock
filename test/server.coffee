@@ -6,8 +6,7 @@ http = require "http"
 randomPort = -> Math.floor(Math.random() * 2000) + 8000
 
 getServer = ->
-  Warlock.createServer
-    server: http.createServer().listen randomPort()
+  Warlock.createServer http.createServer().listen randomPort()
 
 getClient = (server) -> 
   Warlock.createClient 

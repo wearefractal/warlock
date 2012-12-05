@@ -1,0 +1,8 @@
+{
+  "name": "warlock",
+  "version": "0.1.0",
+  "main": "./warlock.js",
+  "dependencies": {
+    "protosock": "latest"
+  }
+}
